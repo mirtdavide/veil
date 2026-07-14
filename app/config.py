@@ -4,9 +4,10 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
 
-    model_config = SettingsConfigDict(env_file=".env") #Read from .env
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore") #Read from .env
     app_name: str = "Veil"
     debug: bool = False
     secret_key: str
+    database_url: str
 
 settings = Settings() #We create an instance here and import it along the project
