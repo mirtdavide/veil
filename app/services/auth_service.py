@@ -21,7 +21,7 @@ class AuthService:
             raise HTTPException(status_code=409, detail="Invite code has already been used")
         
         # Check if the invite code has expired
-        if invite.expires_at < datetime.now(timezone.utc):
+        if invite.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
             raise HTTPException(status_code=400, detail="Invite code has expired")
 
         # Check if the email or username is already taken

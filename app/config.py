@@ -9,5 +9,8 @@ class Settings(BaseSettings):
     debug: bool = False
     secret_key: str
     database_url: str
-
+    jwt_secret_key: str
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
 settings = Settings() #We create an instance here and import it along the project
