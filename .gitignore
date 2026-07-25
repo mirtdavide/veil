@@ -11,3 +11,6 @@ wheels/
 
 # Keys
 .env
+
+# Documentazione di sviluppo (uso personale, non da versionare)
+docs/
