@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
+from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.repositories.invite_code_repositories import InviteCodeRepository
 from app.services.auth_service import AuthService
 from app.schemas.auth import UserLogin, UserRegister, UserResponse
-
+from app.dependencies import get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
@@ -20,3 +21,7 @@ async def register(user_data: UserRegister, service: AuthService = Depends(get_a
 @router.post("/login")
 async def login(credentials: UserLogin, service: AuthService = Depends(get_auth_service)):
     return service.login(credentials.email, credentials.password)
+
+@router.get("/me", response_model=UserResponse)
+async def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user
