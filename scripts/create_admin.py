@@ -34,18 +34,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("Usage: python scripts/create_admin.py <username> <email> <password>")
         sys.exit(1)
-
-    db = SessionLocal()
-    admin = User(
-        username=sys.argv[1],
-        email=sys.argv[2],
-        hashed_password=hash_password(sys.argv[3]),
-        public_key=None,
-        can_invite=True,
-        is_active=True
-    )
-    db.add(admin)
-    db.commit()
-    db.refresh(admin)
-    print(f"Admin created: {admin.username} (id={admin.id})")
-    db.close()
+    create_admin(sys.argv[1], sys.argv[2], sys.argv[3])

@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore") #Read from .env
     app_name: str = "Veil"
     debug: bool = False
-    secret_key: str
     database_url: str
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"

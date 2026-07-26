@@ -24,4 +24,7 @@ def create_invite(created_by_id: int, expires_hours: int = 24):
     db.close()
 
 if __name__ == "__main__":
-    create_invite(created_by_id=3)
+    if len(sys.argv) != 2:
+        print("Usage: python scripts/create_invite.py <created_by_id>")
+        sys.exit(1)
+    create_invite(created_by_id=int(sys.argv[1]))
