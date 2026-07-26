@@ -16,3 +16,6 @@ CONTEXT.MD
 
 # Documentazione di sviluppo (uso personale, non da versionare)
 docs/
+
+#Credentials for development (non da versionare)
+test_cred.txt
