@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.repositories.invite_code_repositories import InviteCodeRepository
+from app.repositories.invite_code_repository import InviteCodeRepository
 from app.services.auth_service import AuthService
 from app.schemas.auth import UserLogin, UserRegister, UserResponse
 from app.dependencies import get_current_user

@@ -4,7 +4,7 @@ from app.core.security import create_access_token, create_refresh_token, hash_pa
 from app.schemas.auth import UserRegister as UserRegisterSchema
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.repositories.invite_code_repositories import InviteCodeRepository
+from app.repositories.invite_code_repository import InviteCodeRepository
 from fastapi import HTTPException
 
 class AuthService:

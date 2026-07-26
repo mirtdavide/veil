@@ -22,6 +22,17 @@ class ConversationRepository:
         self.db.commit()
         return conversation
 
+    
+    def is_member(self, conversation_id: int, user_id: int) -> bool:
+        # Check if the user is a member of the conversation
+        result = self.db.query(ConversationMember).filter(
+            ConversationMember.conversation_id == conversation_id,
+            ConversationMember.user_id == user_id
+        ).first()
+        return result is not None #Return True if the user is a member, False otherwise
+
+    
+    
     def get_for_user(self, user_id: int) -> list[Conversation]:
         return self.db.query(Conversation).join(ConversationMember).filter(ConversationMember.user_id == user_id).all()
 

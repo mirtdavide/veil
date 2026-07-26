@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.routers import auth
 from app.routers import conversations
+from app.routers import messages
 
 app = FastAPI(title = "Veil API", 
             description = "Veil API for managing and interacting with Veil services.",
@@ -8,6 +9,7 @@ app = FastAPI(title = "Veil API",
 
 app.include_router(auth.router)
 app.include_router(conversations.router)
+app.include_router(messages.router)
 
 @app.get("/")
 def root():
