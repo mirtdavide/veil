@@ -31,7 +31,11 @@ class ConversationRepository:
         ).first()
         return result is not None #Return True if the user is a member, False otherwise
 
-    
+    def get_member_ids(self, conversation_id: int) -> list[int]:
+
+        rows = self.db.query(ConversationMember).filter(ConversationMember.conversation_id == conversation_id).all()
+        return [row.user_id for row in rows]
+        
     
     def get_for_user(self, user_id: int) -> list[Conversation]:
         return self.db.query(Conversation).join(ConversationMember).filter(ConversationMember.user_id == user_id).all()

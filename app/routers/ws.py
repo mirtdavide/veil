@@ -1,3 +1,10 @@
+from pydantic import ValidationError
+from fastapi import HTTPException
+from app.repositories.conversation_repository import ConversationRepository
+from app.repositories.message_repository import MessageRepository
+from app.schemas.message import MessageSend, MessageSendWS, MessageResponse
+from app.services.message_service import MessageService
+
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from jose import JWTError
 from sqlalchemy.orm import Session
@@ -30,10 +37,33 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...), db: 
 
 
     manager.connect(user.id, websocket)
+    conversation_repository = ConversationRepository(db)
+    service = MessageService(MessageRepository(db), conversation_repository)
 
     try:
         while True:
             data = await websocket.receive_json()
-            await websocket.send_json({"echo": data})
+            try:
+                incoming = MessageSendWS.model_validate(data)
+            except ValidationError:
+                await websocket.send_json({"error": "Invalid message format"})
+                continue
+            try:
+                message = service.send_message(incoming.conversation_id, 
+                                               user.id,
+                                               MessageSend(content_encrypted = incoming.content_encrypted,
+                                                           type = incoming.type)
+                                               )
+            except HTTPException as exc:
+                await websocket.send_json({"error": exc.detail})
+                continue
+            payload = MessageResponse.model_validate(message,
+                                                     from_attributes = True
+                                                     ).model_dump(mode = "json")
+            for member in conversation_repository.get_member_ids(incoming.conversation_id):
+                await manager.send_to_user(member, payload)
+            
+
+           
     except WebSocketDisconnect:
         manager.disconnect(user.id)

@@ -16,5 +16,8 @@ class MessageResponse(BaseModel):
     type: Literal["text", "image", "audio", "video", "sticker"]
     created_at: datetime
 
-
+class MessageSendWS(BaseModel):
+    conversation_id : int
+    content_encrypted: str
+    type: Literal["text", "image", "audio", "video", "sticker"]
 
