@@ -28,8 +28,12 @@ class MessageService:
             type=data.type,
             content_encrypted=data.content_encrypted
         )
+        #Recover the list of all the conversation member minus the sender, that will be the list of the receivers of the message
+        member_ids = self.conversation_repository.get_member_ids(conversation_id)
+        recipient_ids = [mid for mid in member_ids if mid != sender_id]
 
-        return self.message_repository.create(message)
+        #Now we pass the message and the list of the receivers to the function create_with_statuses of the MessageRepository
+        return self.message_repository.create_with_statuses(message, recipient_ids)
 
     def get_messages(self, conversation_id: int, user_id: int, limit: int = 50, before_id: int | None = None) -> list[Message]:
         #Check if the id for the conversation exists, if not raise an HTTPException
