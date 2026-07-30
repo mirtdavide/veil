@@ -3,14 +3,17 @@ from fastapi import HTTPException
 from app.models.message import Message
 from app.repositories.message_repository import MessageRepository
 from app.repositories.conversation_repository import ConversationRepository
+from app.repositories.message_status_repository import MessageStatusRepository
 from app.schemas.message import MessageSend
 
 #We use 404 for both cases because we don't want to reveal the existence of a conversation to a user who is not a member of it. 
 # This is a security measure to prevent information leakage.
 class MessageService:
-    def __init__(self, message_repository: MessageRepository, conversation_repository: ConversationRepository):
+    def __init__(self, message_repository: MessageRepository, conversation_repository: ConversationRepository, status_repository: MessageStatusRepository):
         self.message_repository = message_repository
         self.conversation_repository = conversation_repository
+        self.status_repository = status_repository
+
 
     def send_message(self, conversation_id: int,sender_id: int, data: MessageSend) -> Message:
         #Check if the id for the conversation exists, if not raise an HTTPException 
@@ -43,6 +46,8 @@ class MessageService:
         #Check if the user is a member of the conversation, if not raise an HTTPException
         if not self.conversation_repository.is_member(conversation_id, user_id):
             raise HTTPException(status_code=404, detail="Conversation does not exist")
+
+        self.status_repository.mark_conversation_delivered(conversation_id, user_id)
 
         return self.message_repository.get_by_conversation_id(conversation_id, limit, before_id)
 

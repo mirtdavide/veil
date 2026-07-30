@@ -13,6 +13,7 @@ from app.core.connection_manager import manager
 from app.core.security import decode_token
 from app.dependencies import get_db
 from app.repositories.user_repository import UserRepository
+from app.repositories.message_status_repository import MessageStatusRepository
 router = APIRouter(tags = ["websocket"])
 
 
@@ -38,7 +39,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...), db: 
 
     manager.connect(user.id, websocket)
     conversation_repository = ConversationRepository(db)
-    service = MessageService(MessageRepository(db), conversation_repository)
+    status_repository = MessageStatusRepository(db)
+    service = MessageService(MessageRepository(db), conversation_repository, status_repository)
+    status_repository.mark_all_delivered(user.id)
 
     try:
         while True:
@@ -60,8 +63,11 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...), db: 
             payload = MessageResponse.model_validate(message,
                                                      from_attributes = True
                                                      ).model_dump(mode = "json")
+            #member is member_id
             for member in conversation_repository.get_member_ids(incoming.conversation_id):
                 await manager.send_to_user(member, payload)
+                if member != user.id and manager.is_online(member):
+                    status_repository.mark_delivered(message.id, member)
             
 
            

@@ -6,6 +6,7 @@ from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.repositories.message_repository import MessageRepository
 from app.repositories.conversation_repository import ConversationRepository
+from app.repositories.message_status_repository import MessageStatusRepository
 from app.schemas.message import MessageSend, MessageResponse
 from app.services.message_service import MessageService
 
@@ -13,7 +14,7 @@ from app.services.message_service import MessageService
 router = APIRouter(prefix="/conversations", tags=["Messages"])
 
 def get_message_service(db: Session = Depends(get_db)) -> MessageService:
-    return MessageService(MessageRepository(db), ConversationRepository(db))
+    return MessageService(MessageRepository(db), ConversationRepository(db), MessageStatusRepository(db))
 
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse)
