@@ -9,7 +9,7 @@ from app.repositories.conversation_repository import ConversationRepository
 from app.repositories.message_status_repository import MessageStatusRepository
 from app.schemas.message import MessageReadRequest, MessageSend, MessageResponse
 from app.services.message_service import MessageService
-
+from app.core.connection_manager import manager
 
 router = APIRouter(prefix="/conversations", tags=["Messages"])
 
@@ -42,5 +42,15 @@ async def mark_as_read(
     data: MessageReadRequest,
     current_user: User = Depends(get_current_user),
     service: MessageService = Depends(get_message_service),
+    db: Session = Depends(get_db),
 ):
-    return service.mark_read(conversation_id, current_user.id, data.up_to_message_id)
+    newly_all_read = service.mark_read(conversation_id, current_user.id, data.up_to_message_id)
+    message_repo = MessageRepository(db)
+    ids_by_sender: dict[int, list[int]] = {}
+    for message_id in newly_all_read:
+        message = message_repo.get_by_id(message_id)
+        if message is not None:
+            ids_by_sender.setdefault(message.sender_id, []).append(message_id)
+    for sender_id, message_ids in ids_by_sender.items():
+        await manager.send_to_user(sender_id, {"event": "messages_read", "conversation_id": conversation_id, "message_ids": message_ids})
+    return newly_all_read

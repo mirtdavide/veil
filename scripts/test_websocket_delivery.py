@@ -143,17 +143,26 @@ async def main():
     delivered_after = get_delivered_at(message_id_2, user_b_id)
     report("delivered_at per B DOPO la riconnessione", delivered_after not in (None, "NO STATUS ROW"), delivered_after)
 
-    # --- TEST C: B dichiara "letto fino a qui" -> read_at + all_read + cleanup ---
-    print("\n=== TEST C: spunta blu (mark_read + all_read + cleanup) ===")
-    async with httpx.AsyncClient() as client:
-        resp = await client.patch(
-            f"{BASE_URL}/conversations/{conversation_id}/read",
-            json={"up_to_message_id": message_id_2},
-            headers={"Authorization": f"Bearer {token_b}"},
+    # --- TEST C: B dichiara "letto fino a qui" -> read_at + all_read + cleanup + push al mittente ---
+    print("\n=== TEST C: spunta blu (mark_read + all_read + cleanup + push in tempo reale) ===")
+    async with websockets.connect(f"{WS_URL}?token={token_a}") as ws_a:
+        async with httpx.AsyncClient() as client:
+            resp = await client.patch(
+                f"{BASE_URL}/conversations/{conversation_id}/read",
+                json={"up_to_message_id": message_id_2},
+                headers={"Authorization": f"Bearer {token_b}"},
+            )
+            resp.raise_for_status()
+            newly_all_read = resp.json()
+            print(f"Endpoint /read risponde: {newly_all_read}")
+
+        read_push = json.loads(await asyncio.wait_for(ws_a.recv(), timeout=5))
+        print(f"A (mittente) riceve sul WS: {read_push}")
+        report(
+            "il push contiene l'evento messages_read con l'id giusto",
+            read_push.get("event") == "messages_read" and message_id_2 in read_push.get("message_ids", []),
+            read_push,
         )
-        resp.raise_for_status()
-        newly_all_read = resp.json()
-        print(f"Endpoint /read risponde: {newly_all_read}")
 
     report(
         "il messaggio 2 risulta tra i 'newly all read'",
