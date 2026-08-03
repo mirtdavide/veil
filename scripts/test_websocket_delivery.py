@@ -9,6 +9,7 @@ import httpx
 import websockets
 
 from app.core.database import SessionLocal
+from app.models.message import Message
 from app.models.message_status import MessageStatus
 
 BASE_URL = "http://127.0.0.1:8000"
@@ -52,6 +53,35 @@ def get_delivered_at(message_id: int, user_id: int):
 def report(label: str, ok: bool, detail):
     tag = "PASS" if ok else "FAIL"
     print(f"[{tag}] {label}: {detail}")
+
+
+def get_read_at(message_id: int, user_id: int):
+    db = SessionLocal()
+    try:
+        status = db.query(MessageStatus).filter(
+            MessageStatus.message_id == message_id,
+            MessageStatus.user_id == user_id,
+        ).first()
+        return status.read_at if status else "NO STATUS ROW (probabilmente ripulita da mark_all_read)"
+    finally:
+        db.close()
+
+
+def get_all_read_flag(message_id: int):
+    db = SessionLocal()
+    try:
+        message = db.query(Message).filter(Message.id == message_id).first()
+        return message.all_read if message else "MESSAGE NOT FOUND"
+    finally:
+        db.close()
+
+
+def count_status_rows(message_id: int) -> int:
+    db = SessionLocal()
+    try:
+        return db.query(MessageStatus).filter(MessageStatus.message_id == message_id).count()
+    finally:
+        db.close()
 
 
 async def main():
@@ -112,6 +142,33 @@ async def main():
 
     delivered_after = get_delivered_at(message_id_2, user_b_id)
     report("delivered_at per B DOPO la riconnessione", delivered_after not in (None, "NO STATUS ROW"), delivered_after)
+
+    # --- TEST C: B dichiara "letto fino a qui" -> read_at + all_read + cleanup ---
+    print("\n=== TEST C: spunta blu (mark_read + all_read + cleanup) ===")
+    async with httpx.AsyncClient() as client:
+        resp = await client.patch(
+            f"{BASE_URL}/conversations/{conversation_id}/read",
+            json={"up_to_message_id": message_id_2},
+            headers={"Authorization": f"Bearer {token_b}"},
+        )
+        resp.raise_for_status()
+        newly_all_read = resp.json()
+        print(f"Endpoint /read risponde: {newly_all_read}")
+
+    report(
+        "il messaggio 2 risulta tra i 'newly all read'",
+        message_id_2 in newly_all_read,
+        newly_all_read,
+    )
+
+    all_read_flag = get_all_read_flag(message_id_2)
+    report("Message.all_read è True", all_read_flag is True, all_read_flag)
+
+    remaining_rows = count_status_rows(message_id_2)
+    report("le righe MessageStatus di quel messaggio sono state ripulite (atteso 0)", remaining_rows == 0, remaining_rows)
+
+    read_at_after_cleanup = get_read_at(message_id_2, user_b_id)
+    print(f"(informativo) query diretta sulla riga status ormai cancellata: {read_at_after_cleanup}")
 
 
 if __name__ == "__main__":

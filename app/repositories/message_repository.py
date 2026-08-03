@@ -37,3 +37,13 @@ class MessageRepository:
         self.db.commit()
         self.db.refresh(message)
         return message
+
+    def count_unread(self, message_id: int) -> int:
+        return self.db.query(MessageStatus).filter(MessageStatus.message_id == message_id, MessageStatus.read_at.is_(None)).count()
+
+    def mark_all_read(self, message_id: int) -> None:
+        message = self.db.query(Message).filter(Message.id == message_id).first()
+        message.all_read = True
+        self.db.query(MessageStatus).filter(MessageStatus.message_id == message_id).delete()
+        self.db.commit()
+        

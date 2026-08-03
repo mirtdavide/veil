@@ -51,3 +51,22 @@ class MessageService:
 
         return self.message_repository.get_by_conversation_id(conversation_id, limit, before_id)
 
+    def mark_read(self, conversation_id: int, user_id: int, up_to_message_id: int) -> list[int]:
+        #Check if the id for the conversation exists, if not raise an HTTPException
+        if self.conversation_repository.get_by_id(conversation_id) is None:
+            raise HTTPException(status_code=404, detail="Conversation does not exist")
+
+        #Check if the user is a member of the conversation, if not raise an HTTPException
+        if not self.conversation_repository.is_member(conversation_id, user_id):
+            raise HTTPException(status_code=404, detail="Conversation does not exist")
+
+        read_message_ids = self.status_repository.mark_read(conversation_id, user_id, up_to_message_id)
+        newly_read_messages = []
+        for message_id in read_message_ids:
+            if self.message_repository.count_unread(message_id) == 0:
+                self.message_repository.mark_all_read(message_id)
+                newly_read_messages.append(message_id)
+        return newly_read_messages
+
+
+

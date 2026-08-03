@@ -40,5 +40,17 @@ class MessageStatusRepository:
             row.delivered_at = now
         self.db.commit()
 
+
+    def mark_read(self, conversation_id: int, user_id: int, up_to_message_id: int) -> list[int]:
+        rows = self.db.query(MessageStatus).join(Message, MessageStatus.message_id == Message.id).filter(Message.conversation_id == conversation_id,
+                                                                                                            MessageStatus.user_id == user_id,
+                                                                                                            MessageStatus.read_at.is_(None),
+                                                                                                            Message.id <= up_to_message_id).all()
+        now = datetime.now(timezone.utc)
+        for row in rows:
+            row.read_at = now
+        self.db.commit()
+        return [row.message_id for row in rows]
+    
         
 

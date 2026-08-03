@@ -21,3 +21,7 @@ class MessageSendWS(BaseModel):
     content_encrypted: str
     type: Literal["text", "image", "audio", "video", "sticker"]
 
+
+class MessageReadRequest(BaseModel):
+    up_to_message_id: int
+

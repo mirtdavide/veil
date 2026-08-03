@@ -7,7 +7,7 @@ from app.models.user import User
 from app.repositories.message_repository import MessageRepository
 from app.repositories.conversation_repository import ConversationRepository
 from app.repositories.message_status_repository import MessageStatusRepository
-from app.schemas.message import MessageSend, MessageResponse
+from app.schemas.message import MessageReadRequest, MessageSend, MessageResponse
 from app.services.message_service import MessageService
 
 
@@ -35,3 +35,12 @@ async def list_messages(
     service: MessageService = Depends(get_message_service),
 ):
     return service.get_messages(conversation_id, current_user.id, limit, before_id)
+
+@router.patch("/{conversation_id}/read")
+async def mark_as_read(
+    conversation_id: int,
+    data: MessageReadRequest,
+    current_user: User = Depends(get_current_user),
+    service: MessageService = Depends(get_message_service),
+):
+    return service.mark_read(conversation_id, current_user.id, data.up_to_message_id)
