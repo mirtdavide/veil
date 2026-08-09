@@ -19,3 +19,4 @@ def root():
 @app.get("/health")
 def read_health():
     return {"status": "ok"}
+

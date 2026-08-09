@@ -45,12 +45,18 @@ async def mark_as_read(
     db: Session = Depends(get_db),
 ):
     newly_all_read = service.mark_read(conversation_id, current_user.id, data.up_to_message_id)
-    message_repo = MessageRepository(db)
-    ids_by_sender: dict[int, list[int]] = {}
-    for message_id in newly_all_read:
-        message = message_repo.get_by_id(message_id)
-        if message is not None:
-            ids_by_sender.setdefault(message.sender_id, []).append(message_id)
-    for sender_id, message_ids in ids_by_sender.items():
-        await manager.send_to_user(sender_id, {"event": "messages_read", "conversation_id": conversation_id, "message_ids": message_ids})
+
+    if newly_all_read:
+        message_repository = MessageRepository(db)
+        messages = message_repository.get_by_ids(newly_all_read)
+        ids_by_sender: dict[int, list[int]] = {}
+        for message in messages:
+            ids_by_sender.setdefault(message.sender_id, []).append(message.id)
+        for sender_id, message_ids in ids_by_sender.items():
+            await manager.send_to_user(sender_id, {
+                "event": "messages_read",
+                "conversation_id": conversation_id,
+                "message_ids": message_ids,
+            })
+
     return newly_all_read
