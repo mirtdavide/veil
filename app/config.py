@@ -12,4 +12,6 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
+    media_storage_path: str = "media_storage"
+    max_media_file_size_mb: int = 20
 settings = Settings() #We create an instance here and import it along the project

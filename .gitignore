@@ -19,3 +19,6 @@ docs/
 
 #Credentials for development (non da versionare)
 test_cred.txt
+
+#Media files uploaded by users (uso personale, non da versionare)
+media_storage/

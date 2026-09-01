@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import auth
+from app.routers import auth, media
 from app.routers import conversations
 from app.routers import messages
 from app.routers import ws
@@ -11,6 +11,8 @@ app.include_router(auth.router)
 app.include_router(conversations.router)
 app.include_router(messages.router)
 app.include_router(ws.router)
+app.include_router(media.router)
+
 
 @app.get("/")
 def root():
