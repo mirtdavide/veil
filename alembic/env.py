@@ -13,10 +13,13 @@ from app.core.database import Base, engine
 from app.models.user import User
 from app.models.invite_code import InviteCode
 from app.models.conversation import Conversation
+from app.models.key_bundle import KeyBundle
 from app.models.conversation_member import ConversationMember
 from app.models.message import Message
 from app.models.message_status import MessageStatus
+from app.models.media_file_status import MediaFileStatus
 from app.models.media_file import MediaFile
+from app.models.connection import Connection
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
