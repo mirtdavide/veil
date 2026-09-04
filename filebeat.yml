@@ -1,0 +1,13 @@
+filebeat.inputs:
+  - type: filestream
+    id: veil-security-log
+    enabled: true
+    paths:
+      - /veil-logs/security.log
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
