@@ -13,6 +13,7 @@ CONTEXT.MD
 
 # Keys
 .env
+.env.test
 
 # Documentazione di sviluppo (uso personale, non da versionare)
 docs/
@@ -22,6 +23,7 @@ test_cred.txt
 
 #Media files uploaded by users (uso personale, non da versionare)
 media_storage/
+media_storage_test/
 
 #Log di sicurezza applicativi (dati reali, non da versionare)
 logs/
