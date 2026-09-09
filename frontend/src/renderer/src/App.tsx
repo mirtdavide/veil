@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
-import Mainshell from './pages/Mainshell'
+import MainShell from './pages/Mainshell'
 
 type View = 'login' | 'register' | 'shell'
 
@@ -32,7 +32,7 @@ function App(): React.JSX.Element {
   }
 
 
-  return <Mainshell />
+  return <MainShell />
 }
 
 export default App

@@ -16,9 +16,9 @@ interface SidebarProps {
 }
 
 const conversations: Conversation[] = [
-        { id: 1, name: 'Mario', lastMessage: 'Ci vediamo domani?' },
-        { id: 2, name: 'Gruppo Studio', lastMessage: 'Gianni: ok per me' },
-        { id: 3, name: 'Luca', lastMessage: 'Grazie mille!' }
+        { id: 1, name: 'Clown', lastMessage: 'oya brudda?' },
+        { id: 2, name: 'Libertà di parola', lastMessage: 'Ivin: zio pera' },
+        { id: 3, name: 'Luchino', lastMessage: 'Foto Pipo' }
         ]
 
 function Sidebar({onSelectConversation, onNewConversation}: SidebarProps): React.JSX.Element {
@@ -55,10 +55,15 @@ function Sidebar({onSelectConversation, onNewConversation}: SidebarProps): React
           <div
             key={conversation.id}
             onClick={() => onSelectConversation(conversation.id)}
-            className="px-4 py-3 hover:bg-bg-tertiary cursor-pointer"
+            className="flex items-center gap-3 px-4 py-3 hover:bg-bg-tertiary cursor-pointer"
           >
-            <p className="text-text font-semibold">{conversation.name}</p>
-            <p className="text-text-muted text-sm truncate">{conversation.lastMessage}</p>
+            <div className="w-10 h-10 shrink-0 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold">
+              {conversation.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-text font-semibold truncate">{conversation.name}</p>
+              <p className="text-text-muted text-sm truncate">{conversation.lastMessage}</p>
+            </div>
           </div>
         ))}
       </div>
