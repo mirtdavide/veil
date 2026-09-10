@@ -6,11 +6,36 @@ import MainShell from './pages/Mainshell'
 type View = 'login' | 'register' | 'shell'
 
 function App(): React.JSX.Element {
-  const [view, setView] = useState<View>('login')
 
-  function handleLogin(email: string, password: string): void {
-    console.log('login da App', email, password)
-    setView('shell') // Switch to the main shell view after successful login
+  interface CurrentUser {
+    id: number
+    username: string
+    email: string
+  }
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [view, setView] = useState<View>('login')
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  async function handleLogin(email: string, password: string): Promise<void> {
+    const response = await fetch('http://127.0.0.1:8000/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+
+    if (!response.ok) {
+      console.log('login fallito', response.status)
+      return
+    }
+
+    const data = await response.json()
+    setAccessToken(data.access_token)
+
+    const meResponse = await fetch('http://127.0.0.1:8000/auth/me', {
+    headers: { Authorization: `Bearer ${data.access_token}` }
+    })
+    const me = await meResponse.json()
+    setCurrentUser(me)
+    setView('shell')
   }
 
   function handleRegister(
@@ -32,7 +57,7 @@ function App(): React.JSX.Element {
   }
 
 
-  return <MainShell />
+  return <MainShell accessToken={accessToken} currentUser={currentUser} />
 }
 
 export default App

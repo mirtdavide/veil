@@ -1,31 +1,48 @@
-import {useState} from "react"
+import { useState, useEffect } from "react"
 
-/*Conversation preview elements: name and last message. 
-When clicked, it will call the onSelectConversation function with the conversation's id as an argument. 
+/*Conversation preview elements: name and last message.
+When clicked, it will call the onSelectConversation function with the conversation's id as an argument.
 The onNewConversation function is called when the "+" button is clicked, allowing the user to start a new conversation.
 */
 interface Conversation {
-    id: number
-    name: string
-    lastMessage: string
+  id: number
+  type: string
+  name: string | null
+  created_at: string
+  created_by: number
 }
 
 interface SidebarProps {
-    onSelectConversation: (conversationId: number) => void
-    onNewConversation: () => void
+  onSelectConversation: (conversationId: number) => void
+  onNewConversation: () => void
+  accessToken: string | null
 }
 
-const conversations: Conversation[] = [
-        { id: 1, name: 'Clown', lastMessage: 'oya brudda?' },
-        { id: 2, name: 'Libertà di parola', lastMessage: 'Ivin: zio pera' },
-        { id: 3, name: 'Luchino', lastMessage: 'Foto Pipo' }
-        ]
+function Sidebar({ onSelectConversation, onNewConversation, accessToken }: SidebarProps): React.JSX.Element{
 
-function Sidebar({onSelectConversation, onNewConversation}: SidebarProps): React.JSX.Element {
-
+    const [conversations, setConversations] = useState<Conversation[]>([])
     const [searchQuery, setSearchQuery] = useState('')
+
+    useEffect(() => {
+      async function loadConversations(): Promise<void> {
+        const response = await fetch('http://127.0.0.1:8000/conversations', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
+
+        if (!response.ok) {
+          console.log('errore caricamento conversazioni', response.status)
+          return
+        }
+
+        const data = await response.json()
+        setConversations(data)
+      }
+
+      loadConversations()
+    }, [])
+
     const filteredConversations = conversations.filter((conversation) =>
-        conversation.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (conversation.name ?? '').toLowerCase().includes(searchQuery.toLowerCase())
     )
 
     return (
@@ -58,11 +75,10 @@ function Sidebar({onSelectConversation, onNewConversation}: SidebarProps): React
             className="flex items-center gap-3 px-4 py-3 hover:bg-bg-tertiary cursor-pointer"
           >
             <div className="w-10 h-10 shrink-0 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold">
-              {conversation.name.charAt(0).toUpperCase()}
+              {(conversation.name ?? 'C').charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="text-text font-semibold truncate">{conversation.name}</p>
-              <p className="text-text-muted text-sm truncate">{conversation.lastMessage}</p>
+              <p className="text-text font-semibold truncate">{conversation.name ?? 'Conversazione'}</p>
             </div>
           </div>
         ))}

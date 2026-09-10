@@ -6,14 +6,27 @@ import ProfilePanel from './ProfilePanel'
 import SearchPanel from './SearchPanel'
 import NewChatPanel from './NewChatPanel'
 import PendingRequestsPanel from './PendingRequestsPanel'
+interface CurrentUser {
+  id: number
+  username: string
+  email: string
+}
 
+interface MainShellProps {
+  accessToken: string | null
+}
 type RightPanelMode = 'chat' | 'profile' | 'search' | 'newChat' | 'pendingRequests'
 
-function MainShell(): React.JSX.Element {
+function MainShell({ accessToken, currentUser  }: MainShellProps): React.JSX.Element {
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('chat')
-
+  const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null)
   function handleOpenProfile(): void {
     setRightPanelMode('profile')
+  }
+
+  function handleCreateGroup(userIds: number[]): void {
+    console.log('crea gruppo con', userIds)
+    setRightPanelMode('chat')
   }
 
   function handleOpenSearch(): void {
@@ -25,7 +38,7 @@ function MainShell(): React.JSX.Element {
   }
 
   function handleSelectConversation(conversationId: number): void {
-    console.log('conversazione selezionata', conversationId)
+    setSelectedConversationId(conversationId)
     setRightPanelMode('chat')
   }
 
@@ -53,15 +66,22 @@ function MainShell(): React.JSX.Element {
   return (
     <div className="flex">
       <IconRail
+        
         onOpenProfile={handleOpenProfile}
         onOpenSearch={handleOpenSearch}
         onOpenPendingRequests={handleOpenPendingRequests}
       />
-      <Sidebar onSelectConversation={handleSelectConversation} onNewConversation={handleNewConversation} />
-      {rightPanelMode === 'chat' && <ChatPanel />}
-      {rightPanelMode === 'profile' && <ProfilePanel />}
+      <Sidebar onSelectConversation={handleSelectConversation} onNewConversation={handleNewConversation} accessToken={accessToken}/>
+      {rightPanelMode === 'chat' && selectedConversationId !== null && (
+        <ChatPanel
+          conversationId={selectedConversationId}
+          accessToken={accessToken}
+          currentUserId={currentUser?.id ?? 0}
+        />
+      )}
+      {rightPanelMode === 'profile' && <ProfilePanel accessToken={accessToken} />}
       {rightPanelMode === 'search' && <SearchPanel onSendRequest={handleSendRequest} />}
-      {rightPanelMode === 'newChat' && <NewChatPanel onStartChat={handleStartChat} />}
+      {rightPanelMode === 'newChat' && <NewChatPanel onStartChat={handleStartChat} onCreateGroup={handleCreateGroup} />}
       {rightPanelMode === 'pendingRequests' && (
         <PendingRequestsPanel onAcceptRequest={handleAcceptRequest} onRefuseRequest={handleRefuseRequest} />
       )}

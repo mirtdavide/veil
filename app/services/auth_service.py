@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 from app.core.security import create_access_token, create_refresh_token, hash_password, verify_password
 from app.schemas.auth import UserRegister as UserRegisterSchema
+from app.schemas.auth import UserUpdate as UserUpdateSchema
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.repositories.invite_code_repository import InviteCodeRepository
@@ -59,4 +60,15 @@ class AuthService:
         refresh_token = create_refresh_token(data={"sub": str(user.id)})
         
         return {"access_token": access_token, "refresh_token": refresh_token}
+
+    def update_profile(self, user:User, data: UserUpdateSchema):
+        if data.username is not None and data.username!=user.username:
+            if self.user_repo.get_by_username(data.username):
+                raise HTTPException(status_code=409, detail="Username is already taken")
+            user.username = data.username
+
+        if data.bio is not None:
+            user.bio = data.bio
+        return self.user_repo.update(user)
+
         

@@ -1,19 +1,57 @@
-import { useState, type SubmitEvent } from 'react'
+import { useState, useEffect, type SubmitEvent } from 'react'
 
-function ProfilePanel(): React.JSX.Element {
-  const [username, setUsername] = useState('MerlinoErmetico')
-  const [bio, setBio] = useState('BruddaOya.')
+interface ProfilePanelProps {
+  accessToken: string | null
+}
 
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>): void {
+function ProfilePanel({ accessToken }: ProfilePanelProps): React.JSX.Element {
+  const [username, setUsername] = useState('')
+  const [bio, setBio] = useState('')
+
+  useEffect(() => {
+    async function loadProfile(): Promise<void> {
+      const response = await fetch('http://127.0.0.1:8000/auth/me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+
+      if (!response.ok) {
+        console.log('errore caricamento profilo', response.status)
+        return
+      }
+
+      const data = await response.json()
+      setUsername(data.username)
+      setBio(data.bio ?? '')
+    }
+
+    loadProfile()
+  }, [])
+
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
-    console.log('salva profilo', username, bio)
+
+    const response = await fetch('http://127.0.0.1:8000/auth/me', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ username, bio })
+    })
+
+    if (!response.ok) {
+      console.log('errore salvataggio profilo', response.status)
+      return
+    }
+
+    console.log('profilo salvato')
   }
 
   return (
     <div className="flex-1 bg-bg h-screen flex flex-col items-center justify-center gap-4">
       <div className="relative">
         <div className="w-24 h-24 rounded-full bg-bg-secondary flex items-center justify-center text-3xl text-text">
-          M
+          {(username || 'U').charAt(0).toUpperCase()}
         </div>
         <div className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-accent border-2 border-bg"></div>
       </div>

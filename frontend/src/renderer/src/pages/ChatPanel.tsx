@@ -1,34 +1,76 @@
-import { useState, type SubmitEvent } from 'react'
+import { useState, type SubmitEvent, useEffect } from 'react'
 
 interface Message {
   id: number
-  text: string
-  fromMe: boolean
+  conversation_id: number
+  sender_id: number
+  content_encrypted: string
+  type: string
+  created_at: string
 }
 
-const messages: Message[] = [
-  { id: 1, text: 'Oya', fromMe: false },
-  { id: 2, text: 'Brudda', fromMe: true },
-  { id: 3, text: 'Crazy', fromMe: false }
-]
 
-function ChatPanel(): React.JSX.Element {
+interface ChatPanelProps {
+  conversationId: number
+  accessToken: string | null
+  currentUserId: number
+}
+
+
+function ChatPanel({ conversationId, accessToken, currentUserId }: ChatPanelProps): React.JSX.Element {
+  const [messages, setMessages] = useState<Message[]>([])
   const [draft, setDraft] = useState('')
+  useEffect(() => {
+    async function loadMessages(): Promise<void> {
+      const response = await fetch(
+        `http://127.0.0.1:8000/conversations/${conversationId}/messages`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
 
-  function handleSend(e: SubmitEvent<HTMLFormElement>): void {
-    e.preventDefault()
-    if (draft.trim() === '') return
-    console.log('invia messaggio', draft)
-    setDraft('')
+      if (!response.ok) {
+        console.log('errore caricamento messaggi', response.status)
+        return
+      }
+
+      const data = await response.json()
+      setMessages(data)
+    }
+
+    loadMessages()
+  }, [conversationId])
+  async function handleSend(e: SubmitEvent<HTMLFormElement>): Promise<void> {
+  e.preventDefault()
+  if (draft.trim() === '') return
+
+  const response = await fetch(
+    `http://127.0.0.1:8000/conversations/${conversationId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ content_encrypted: draft, type: 'text' })
+    }
+  )
+
+  if (!response.ok) {
+    console.log('errore invio messaggio', response.status)
+    return
   }
+
+  const newMessage = await response.json()
+  setMessages([...messages, newMessage])
+  setDraft('')
+}
 
   return (
     <div className="flex-1 bg-bg h-screen flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3 bg-bg-secondary">
         <div className="w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold">
-          I
+          C
         </div>
-        <p className="text-text font-semibold">ilpelato</p>
+        <p className="text-text font-semibold">Conversazione {conversationId}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
@@ -36,12 +78,12 @@ function ChatPanel(): React.JSX.Element {
           <div
             key={message.id}
             className={
-              message.fromMe
+              message.sender_id === currentUserId
                 ? 'self-end bg-accent text-text px-3 py-2 rounded max-w-xs'
                 : 'self-start bg-bg-secondary text-text px-3 py-2 rounded max-w-xs'
             }
           >
-            {message.text}
+            {message.content_encrypted}
           </div>
         ))}
       </div>

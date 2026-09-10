@@ -5,7 +5,7 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.repositories.invite_code_repository import InviteCodeRepository
 from app.services.auth_service import AuthService
-from app.schemas.auth import UserLogin, UserRegister, UserResponse
+from app.schemas.auth import UserLogin, UserRegister, UserResponse, UserUpdate
 from app.dependencies import get_current_user
 from app.core.rate_limiter import limiter
 from slowapi.util import get_remote_address
@@ -46,3 +46,11 @@ async def login(request: Request, credentials: UserLogin, service: AuthService =
 @router.get("/me", response_model=UserResponse)
 async def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.patch("/me", response_model=UserResponse)
+async def update_current_user(
+    data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service)
+):
+    return service.update_profile(current_user, data)
