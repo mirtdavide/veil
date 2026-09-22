@@ -14,6 +14,7 @@ interface CurrentUser {
 
 interface MainShellProps {
   accessToken: string | null
+  currentUser: CurrentUser | null
 }
 type RightPanelMode = 'chat' | 'profile' | 'search' | 'newChat' | 'pendingRequests'
 
@@ -55,13 +56,6 @@ function MainShell({ accessToken, currentUser  }: MainShellProps): React.JSX.Ele
     setRightPanelMode('chat')
   }
 
-  function handleAcceptRequest(requestId: number): void {
-    console.log('accettata richiesta', requestId)
-  }
-
-  function handleRefuseRequest(requestId: number): void {
-    console.log('rifiutata richiesta', requestId)
-  }
 
   return (
     <div className="flex">
@@ -83,7 +77,7 @@ function MainShell({ accessToken, currentUser  }: MainShellProps): React.JSX.Ele
       {rightPanelMode === 'search' && <SearchPanel onSendRequest={handleSendRequest} />}
       {rightPanelMode === 'newChat' && <NewChatPanel onStartChat={handleStartChat} onCreateGroup={handleCreateGroup} />}
       {rightPanelMode === 'pendingRequests' && (
-        <PendingRequestsPanel onAcceptRequest={handleAcceptRequest} onRefuseRequest={handleRefuseRequest} />
+        <PendingRequestsPanel accessToken={accessToken} />
       )}
     </div>
   )

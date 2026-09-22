@@ -13,3 +13,13 @@ class ConnectionResponse(BaseModel):
     status: str
     created_at: datetime
     accepted_at: datetime | None
+
+class UserPublic(BaseModel):
+    id: int
+    username: str
+
+
+class PendingConnectionResponse(BaseModel):
+    id: int
+    requester: UserPublic
+    created_at: datetime

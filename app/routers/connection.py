@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from app.repositories.user_repository import UserRepository
+from app.schemas.connection import ConnectionRequest, ConnectionResponse, PendingConnectionResponse, UserPublic
 from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.repositories.connection_repository import ConnectionRepository
@@ -11,7 +12,7 @@ router = APIRouter(tags=["connections"])
 
 
 def get_connection_service(db: Session = Depends(get_db)) -> ConnectionService:
-    return ConnectionService(ConnectionRepository(db))
+    return ConnectionService(ConnectionRepository(db), UserRepository(db))
 
 
 @router.post("/connections", response_model=ConnectionResponse)
@@ -41,9 +42,16 @@ async def reject_connection_request(
     service.reject_request(connection_id, current_user.id)
 
 
-@router.get("/connections/pending", response_model=list[ConnectionResponse])
+@router.get("/connections/pending", response_model=list[PendingConnectionResponse])
 async def list_pending_connection_requests(
     current_user: User = Depends(get_current_user),
     service: ConnectionService = Depends(get_connection_service),
 ):
     return service.list_pending_requests(current_user.id)
+
+@router.get("/connections", response_model=list[UserPublic])
+async def list_friends(
+    current_user: User = Depends(get_current_user),
+    service: ConnectionService = Depends(get_connection_service),
+):
+    return service.list_friends(current_user.id)

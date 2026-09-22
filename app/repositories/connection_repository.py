@@ -46,6 +46,11 @@ class ConnectionRepository:
             Connection.addressee_id == user_id, Connection.status == "pending"
         ).all()
 
+    def list_accepted_for_user(self, user_id: int) -> list[Connection]:
+        return self.db.query(Connection).filter(
+        or_(Connection.requester_id == user_id, Connection.addressee_id == user_id),
+        Connection.status == "accepted"
+        ).all()
 
     #Utility method to check if two users are connected (i.e., if there is an accepted connection between them)
     def are_connected(self, user_a_id: int, user_b_id: int) -> bool:

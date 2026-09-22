@@ -12,9 +12,17 @@ const friends: Friend[] = [
 ]
 
 interface NewChatPanelProps {
+  accessToken: string | null
   onStartChat: (userId: number) => void
   onCreateGroup: (userIds: number[]) => void
 }
+
+interface Friend{
+  id: number
+  username: string
+}
+
+
 
 
 function NewChatPanel({ onStartChat, onCreateGroup }: NewChatPanelProps): React.JSX.Element {

@@ -1,11 +1,13 @@
 from fastapi import HTTPException
 from app.repositories.connection_repository import ConnectionRepository
 from app.models.connection import Connection
-
+from app.repositories.user_repository import UserRepository
+from app.schemas.connection import PendingConnectionResponse, UserPublic
 
 class ConnectionService:
-    def __init__(self, connection_repository: ConnectionRepository):
+    def __init__(self, connection_repository: ConnectionRepository, user_repository: UserRepository):
         self.connection_repository = connection_repository
+        self.user_repository = user_repository
 
 
     def send_request(self, requester_id: int, addressee_id: int) -> Connection:
@@ -52,5 +54,23 @@ class ConnectionService:
 
         self.connection_repository.delete(connection_id)
 
-    def list_pending_requests(self, user_id: int) -> list[Connection]:
-        return self.connection_repository.list_pending_for_user(user_id)
+    def list_pending_requests(self, user_id: int) -> list[PendingConnectionResponse]:
+        connections = self.connection_repository.list_pending_for_user(user_id)
+        result = []
+        for connection in connections:
+            requester = self.user_repository.get_by_id(connection.requester_id)
+            result.append(PendingConnectionResponse(
+                id=connection.id,
+                requester=UserPublic(id=requester.id, username=requester.username),
+                created_at=connection.created_at
+            ))
+        return result
+
+    def list_friends(self, user_id: int) -> list[UserPublic]:
+        connections = self.connection_repository.list_accepted_for_user(user_id)
+        result = []
+        for connection in connections:
+            friend_id = connection.addressee_id if connection.requester_id == user_id else connection.requester_id
+            friend = self.user_repository.get_by_id(friend_id)
+            result.append(UserPublic(id=friend.id, username=friend.username))
+        return result
