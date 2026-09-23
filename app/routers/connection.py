@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.repositories.user_repository import UserRepository
-from app.schemas.connection import ConnectionRequest, ConnectionResponse, PendingConnectionResponse, UserPublic
+from app.schemas.connection import ConnectionRequest, ConnectionResponse, PendingConnectionResponse, UserPublic, SentConnectionResponse
 from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.repositories.connection_repository import ConnectionRepository
@@ -55,3 +55,20 @@ async def list_friends(
     service: ConnectionService = Depends(get_connection_service),
 ):
     return service.list_friends(current_user.id)
+
+
+@router.get("/connections/search", response_model=list[UserPublic])
+async def search_users(
+    q: str,
+    current_user: User = Depends(get_current_user),
+    service: ConnectionService = Depends(get_connection_service),
+):
+    return service.search_users(q, current_user.id)
+
+
+@router.get("/connections/sent", response_model=list[SentConnectionResponse])
+async def list_sent_connection_requests(
+    current_user: User = Depends(get_current_user),
+    service: ConnectionService = Depends(get_connection_service),
+):
+    return service.list_sent_requests(current_user.id)

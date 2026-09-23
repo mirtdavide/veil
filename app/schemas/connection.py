@@ -23,3 +23,10 @@ class PendingConnectionResponse(BaseModel):
     id: int
     requester: UserPublic
     created_at: datetime
+
+
+class SentConnectionResponse(BaseModel):
+    id: int
+    addressee: UserPublic
+    status: str
+    created_at: datetime

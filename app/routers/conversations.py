@@ -29,3 +29,30 @@ async def list_conversations(
     service: ConversationService = Depends(get_conversation_service),
 ):
     return service.get_conversations_for_user(current_user.id)
+
+
+@router.delete("/{conversation_id}/messages", status_code=204)
+async def clear_conversation(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    service: ConversationService = Depends(get_conversation_service),
+):
+    service.clear_conversation(conversation_id, current_user.id)
+
+
+@router.delete("/{conversation_id}", status_code=204)
+async def delete_conversation(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    service: ConversationService = Depends(get_conversation_service),
+):
+    service.delete_conversation(conversation_id, current_user.id)
+
+
+@router.post("/{conversation_id}/leave", status_code=204)
+async def leave_conversation(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    service: ConversationService = Depends(get_conversation_service),
+):
+    service.leave_conversation(conversation_id, current_user.id)

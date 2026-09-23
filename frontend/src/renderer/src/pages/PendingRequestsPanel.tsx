@@ -22,15 +22,14 @@ interface Request{
 //Functions Of The Buttons, need to add the functions to the signature of function PendingRequestsPanel
 interface PendingRequestsPanelProps{
     accessToken: string | null
-    //NameOfTheFunction:Input:inWhichFormIsTheInput=>WhatIsReturned
-    
+    onViewProfile: (userId: number) => void
 
 }
 
 
 
 
-function PendingRequestsPanel({ accessToken }: PendingRequestsPanelProps): React.JSX.Element {
+function PendingRequestsPanel({ accessToken, onViewProfile }: PendingRequestsPanelProps): React.JSX.Element {
     //Again give the variables a memory after each redraw, will contain an array of <Request>, initial value ([]) set to empty
     //The useState function returns 2 things, the values of the state and a function to change them
     const [requests, setRequests] = useState<Request[]>([])
@@ -107,7 +106,11 @@ function PendingRequestsPanel({ accessToken }: PendingRequestsPanelProps): React
         
         <div key={request.id} className="flex justify-between items-center w-full px-3 py-2 bg-bg-secondary rounded">
             <div className="flex gap-3 items-center">
-                <div className="w-9 h-9 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold text-sm"></div>
+                <div
+                onClick={() => onViewProfile(request.requester.id)}
+                className="w-9 h-9 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold text-sm cursor-pointer">
+                    {request.requester.username.charAt(0).toUpperCase()}
+                </div>
                 <p className="text-text">{request.requester.username}</p>
             </div>
             <div className="flex gap-3">

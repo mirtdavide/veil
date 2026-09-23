@@ -52,6 +52,11 @@ class ConnectionRepository:
         Connection.status == "accepted"
         ).all()
 
+    #Requests this user has sent, in any status. Rejected ones never show up here because
+    #reject_request deletes the row outright — only "pending" or "accepted" ever remain.
+    def list_sent_for_user(self, user_id: int) -> list[Connection]:
+        return self.db.query(Connection).filter(Connection.requester_id == user_id).all()
+
     #Utility method to check if two users are connected (i.e., if there is an accepted connection between them)
     def are_connected(self, user_a_id: int, user_b_id: int) -> bool:
         connection = self.get_between(user_a_id, user_b_id)

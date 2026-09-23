@@ -24,5 +24,12 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+#Public-facing profile: what one user is allowed to see about another (no email, no active flag)
+class UserProfile(BaseModel):
+    id: int
+    username: str
+    bio: str | None
+    avatar_path: str | None
+
 
 

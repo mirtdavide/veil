@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from app.repositories.connection_repository import ConnectionRepository
 from app.models.connection import Connection
 from app.repositories.user_repository import UserRepository
-from app.schemas.connection import PendingConnectionResponse, UserPublic
+from app.schemas.connection import PendingConnectionResponse, UserPublic, SentConnectionResponse
 
 class ConnectionService:
     def __init__(self, connection_repository: ConnectionRepository, user_repository: UserRepository):
@@ -73,4 +73,21 @@ class ConnectionService:
             friend_id = connection.addressee_id if connection.requester_id == user_id else connection.requester_id
             friend = self.user_repository.get_by_id(friend_id)
             result.append(UserPublic(id=friend.id, username=friend.username))
+        return result
+
+    def search_users(self, query: str, current_user_id: int) -> list[UserPublic]:
+        users = self.user_repository.search_by_username(query, current_user_id)
+        return [UserPublic(id=user.id, username=user.username) for user in users]
+
+    def list_sent_requests(self, user_id: int) -> list[SentConnectionResponse]:
+        connections = self.connection_repository.list_sent_for_user(user_id)
+        result = []
+        for connection in connections:
+            addressee = self.user_repository.get_by_id(connection.addressee_id)
+            result.append(SentConnectionResponse(
+                id=connection.id,
+                addressee=UserPublic(id=addressee.id, username=addressee.username),
+                status=connection.status,
+                created_at=connection.created_at
+            ))
         return result

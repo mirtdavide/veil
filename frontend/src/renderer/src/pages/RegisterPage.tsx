@@ -1,12 +1,11 @@
 import { useState, type SubmitEvent } from 'react'
 
 interface RegisterPageProps {
-onRegister: (username: string, email: string, password: string, inviteCode: string) => void
-    onNavigateToLogin: () => void
+  onRegisterSuccess: () => void
+  onNavigateToLogin: () => void
 }
 
-
-function RegisterPage({ onRegister, onNavigateToLogin }: RegisterPageProps): React.JSX.Element {
+function RegisterPage({ onRegisterSuccess, onNavigateToLogin }: RegisterPageProps): React.JSX.Element {
 
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
@@ -14,20 +13,33 @@ function RegisterPage({ onRegister, onNavigateToLogin }: RegisterPageProps): Rea
     const [confirmPassword, setConfirmPassword] = useState('')
     const [inviteCode, setInviteCode] = useState('')
     /*State variable to store the error message, and a function to update that value when the user types in the input field (called by the onChange event).
-    It can take either a string or null, and is initialized to null. 
-    This is used to display an error message if the passwords do not match when the user submits the form. 
+    It can take either a string or null, and is initialized to null.
+    This is used to display an error message if the passwords do not match when the user submits the form.
     */
-    
+
     const [error, setError] = useState<string | null>(null)
 
-    function handleSubmit(e: SubmitEvent<HTMLFormElement>): void {
+    async function handleSubmit(e: SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
     if (password !== confirmPassword) {
       setError('Le password non coincidono')
       return
     }
+
+    const response = await fetch('http://127.0.0.1:8000/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, invite_code: inviteCode })
+    })
+
+    if (!response.ok) {
+      const data = await response.json()
+      setError(data.detail ?? 'Registrazione fallita')
+      return
+    }
+
     setError(null)
-    onRegister(username, email, password, inviteCode)
+    onRegisterSuccess()
     }
     return(
       <div className="min-h-screen flex items-center justify-center bg-bg text-text">

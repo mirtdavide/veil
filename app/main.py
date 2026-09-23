@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import auth, connection, key_bundle, media
+from app.routers import auth, connection, key_bundle, media, users
 from app.routers import conversations
 from app.routers import messages
 from app.routers import ws
@@ -34,6 +34,7 @@ app.include_router(ws.router)
 app.include_router(media.router)
 app.include_router(connection.router)
 app.include_router(key_bundle.router)
+app.include_router(users.router)
 
 @app.get("/")
 def root():

@@ -12,12 +12,24 @@ interface Message {
 
 interface ChatPanelProps {
   conversationId: number
+  conversationName: string
+  otherUserId: number | null
   accessToken: string | null
   currentUserId: number
+  onViewProfile: (userId: number) => void
+  refreshKey: number
 }
 
 
-function ChatPanel({ conversationId, accessToken, currentUserId }: ChatPanelProps): React.JSX.Element {
+function ChatPanel({
+  conversationId,
+  conversationName,
+  otherUserId,
+  accessToken,
+  currentUserId,
+  onViewProfile,
+  refreshKey
+}: ChatPanelProps): React.JSX.Element {
   const [messages, setMessages] = useState<Message[]>([])
   const [draft, setDraft] = useState('')
   useEffect(() => {
@@ -37,7 +49,7 @@ function ChatPanel({ conversationId, accessToken, currentUserId }: ChatPanelProp
     }
 
     loadMessages()
-  }, [conversationId])
+  }, [conversationId, refreshKey])
   async function handleSend(e: SubmitEvent<HTMLFormElement>): Promise<void> {
   e.preventDefault()
   if (draft.trim() === '') return
@@ -67,10 +79,17 @@ function ChatPanel({ conversationId, accessToken, currentUserId }: ChatPanelProp
   return (
     <div className="flex-1 bg-bg h-screen flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3 bg-bg-secondary">
-        <div className="w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold">
-          C
+        <div
+          onClick={() => otherUserId !== null && onViewProfile(otherUserId)}
+          className={
+            otherUserId !== null
+              ? 'w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold cursor-pointer'
+              : 'w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center text-text font-semibold'
+          }
+        >
+          {conversationName.charAt(0).toUpperCase()}
         </div>
-        <p className="text-text font-semibold">Conversazione {conversationId}</p>
+        <p className="text-text font-semibold">{conversationName}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">

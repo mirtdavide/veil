@@ -32,3 +32,10 @@ class UserRepository:
             self.db.commit()
             self.db.refresh(user)
             return user
+
+    #Case-insensitive partial match on username, excluding the searching user, capped to 20 results
+    def search_by_username(self, query: str, exclude_user_id: int) -> list[User]:
+        return self.db.query(User).filter(
+            User.username.ilike(f"%{query}%"),
+            User.id != exclude_user_id
+        ).limit(20).all()
